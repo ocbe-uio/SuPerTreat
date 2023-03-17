@@ -1,4 +1,5 @@
-gs4_cisplatin <- function(df, type="prob", 
+gs4_cisplatin <- function(df, 
+                          type="prob", 
                           p_threshold = 0.5, 
                           unmeasured_genes = c("SLC25A45", "TMC4", "MALAT1")){
     # this function implements a logistic regression model for predicting 
