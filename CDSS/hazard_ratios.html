@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hazard Ratios</title>
+  <style>
+    /* CSS styles */
+    .form-container {
+      max-width: 400px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .form-container h2 {
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+    }
+    .form-group button {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .result-container {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>Hazard Ratios</h2>
+    <form id="hazard-ratio-form">
+      <div class="form-group">
+        
+        <label for="clinical_scenario">Clinical scenario:</label>
+            <select id="clinical_scenario" name="clinical_scenario">
+              <option value="2">HPV Negative</option>
+              <option value="3">HPV Positive</option>
+              <option value="4">Radiosensitivity</option>
+              <option value="5">Pancancer-cisplatin</option>
+              <option value="6">Cetuximab</option>
+            </select>
+        </div>
+        <div class="form-group">
+        <label for="outcome">Outcome:</label>
+        <select id="outcome" name="outcome">
+          <option value="os">Overall Survival (OS)</option>
+          <option value="dfs">Disease Free Survival (DFS)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="gene-signature-type">Gene Signature Type:</label>
+        <select id="gene-signature-type" name="gene_signature_type">
+          <option value="class">Class</option>
+          <option value="score">Score</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="censoring-time">Censoring Time:</label>
+        <select id="censoring-time" name="censoring_time">
+          <option value="24">24</option>
+          <option value="60">60</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <button type="submit">Get Hazard Ratios</button>
+      </div>
+    </form>
+  </div>
+  <div id="result-section" class="result-container"></div>
+  <script>
+    // JavaScript code
+    const form = document.getElementById('hazard-ratio-form');
+    const resultSection = document.getElementById('result-section');
+    form.addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent form submission
+      const outcome = document.getElementById('outcome').value;
+      const geneSignatureType = document.getElementById('gene-signature-type').value;
+      const censoringTime = document.getElementById('censoring-time').value;
+      const clinicalScenario = document.getElementById('clinical_scenario').value;
+
+      // Make API call with the selected parameters
+      // Replace the URL with the actual API endpoint
+      const apiUrl = 'http://127.0.0.1:8001/hazard_ratios?outcome=' + outcome + '&gene_signature_type=' + geneSignatureType + '&censoring_time=' + censoringTime + '&clinical_scenario=' + clinicalScenario;
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          // Render the data in the result section
+          resultSection.innerHTML = `
+            <h3>Results:</h3>
+            <p>Hazard Ratio: ${data.hazard_ratio}</p>
+            <p>Upper Confidence Interval: ${data.hr_upper_ci}</p>
+            <p>Lower Confidence Interval: ${data.hr_lower_ci}</p>
+            <p>P-value: ${data.p_value}</p>
+            <p>Comparison: ${data.comparison}</p>
+          `;
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          resultSection.innerHTML = '<p>Error occurred. Please try again.</p>';
+        });
+    });
+  </script>
+</body>
+</html>
