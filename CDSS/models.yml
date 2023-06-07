@@ -1,0 +1,760 @@
+swagger: "3.1"
+info:
+  contact:
+    responsibleDeveloper: Mauricio Moreira Soares
+    url: phydev.github.io
+    email: phydev@protonmail.ch
+    responsibleOrganization: University of Oslo
+  version: "1.0.1"
+  title: Models API
+paths:
+  /base_model:
+    post:
+      summary: Clinical scenario 1
+      description: Clinical model without omics data - base model
+      parameters:
+        - name: outcome
+          in: body
+          description: Overall survival (os) or disease free survival (dfs)
+          required: true
+          type: string
+          enum: [os, dfs]
+        - name: censoring_time
+          in: body
+          description: The censoring time
+          required: true
+          type: integer
+          enum: [24, 60]
+        - name: clinical_sex
+          in: body
+          description: The clinical sex
+          required: true
+          type: string
+          enum: [male, female]
+        - name: clinical_age_at_diagnosis
+          in: body
+          description: The clinical age at diagnosis
+          required: true
+          type: integer
+          minimum: 19
+          maximum: 93
+        - name: ctn_disease_extension_diagnosis
+          in: body
+          description: The disease extension diagnosis
+          required: true
+          type: string
+          enum: [early disease, locoregionally advanced disease]
+        - name: surge_undergone_cancer_surgery
+          in: body
+          description: Whether surgery has been undergone for cancer
+          required: true
+          type: string
+          enum: [yes, no]
+        - name: radio_radiotherapy_treatment
+          in: body
+          description: Whether radiotherapy treatment has been received
+          required: true
+          type: string
+          enum: [yes, no]
+        - name: chemo_chemotherapy_treatment
+          in: body
+          description: Whether chemotherapy treatment has been received
+          required: true
+          type: string
+          enum: [yes, no]
+        - name: smoking_category
+          in: body
+          description: The smoking category
+          required: true
+          type: string
+          enum: [never, current_former]
+        - name: tumor_region
+          in: body
+          description: The tumor region
+          required: true
+          type: string
+          enum: [oropharynx, oral_cavity, hypopharynx, larynx]
+        - name: hpv_status
+          in: body
+          description: The HPV status
+          required: true
+          type: string
+          enum: [positive, negative, unknown]
+      responses:
+        200:
+          description: survival probability and the time
+          schema:
+            type: object
+            properties:
+              survival_probability:
+                type: array
+                format: float
+                example: [0.1, 0.2, 0.3]
+              time:
+                type: array
+                format: integer
+                example: [0, 30, 60]
+              ci_lower:
+                type: array
+                format: float
+                example: [0.1, 0.2, 0.3]
+              ci_upper:
+                type: array
+                format: float
+                example: [0.1, 0.2, 0.3]
+        400:
+          description: Invalid input parameters
+  /hpv_negative:
+    post:
+      summary: Clinical scenario 2
+      description: Gene signature model for HPV-Negative patients
+      parameters:
+        - name: outcome
+          in: body
+          description: Overall survival (os) or disease free survival (dfs)
+          required: true
+          type: string
+          enum: [os, dfs]
+        - name: gene_signature_type
+          in: body
+          description: The gene signature type
+          required: true
+          type: string
+          enum: [class, score]
+        - name: censoring_time
+          in: body
+          description: The censoring time
+          required: true
+          type: integer
+          enum: [24, 60]
+        - name: gs1
+          in: body
+          description: Either the GS class or the score
+          schema:
+            type: object
+            properties:
+              gs_class:
+                description: GS1 class
+                type: string
+                enum: ["low", "high"]
+              gs_score:
+                description: GS1 score
+                type: integer
+                enum: [-2, -1, 0, 1, 2]
+                anyOf:
+                  - required: ["gs_class"]
+                  - required: ["gs_score"]      
+        - name: clinical_sex
+          in: body
+          description: The clinical sex
+          required: true
+          type: string
+          enum: [male, female]
+        - name: clinical_age_at_diagnosis
+          in: body
+          description: The clinical age at diagnosis
+          required: true
+          type: integer
+          minimum: 19
+          maximum: 93
+        - name: ctn_disease_extension_diagnosis
+          in: body
+          description: The disease extension diagnosis
+          required: true
+          type: string
+          enum: [early disease, locoregionally advanced disease]
+        - name: surge_undergone_cancer_surgery
+          in: body
+          description: Whether surgery has been undergone for cancer
+          required: true
+          type: string
+          enum: [yes, no]
+        - name: radio_radiotherapy_treatment
+          in: body
+          description: Whether radiotherapy treatment has been received
+          required: true
+          type: string
+          enum: [yes, no]
+        - name: chemo_chemotherapy_treatment
+          in: body
+          description: Whether chemotherapy treatment has been received
+          required: true
+          type: string
+          enum: [yes, no]
+        - name: smoking_category
+          in: body
+          description: The smoking category
+          required: true
+          type: string
+          enum: [never, current_former] 
+        - name: tumor_region
+          in: body
+          description: The tumor region
+          required: true
+          type: string
+          enum: [oropharynx, oral_cavity, hypopharynx, larynx]
+        - name: hpv_status
+          in: body
+          description: The HPV status, only negative in this model
+          required: false
+          type: string
+          enum: [negative]
+      responses:
+        200:
+          description: survival probability with confidence intervals and the time
+          schema:
+            type: object
+            properties:
+              survival_probability:
+                type: array
+                format: float
+                example: [0.1, 0.2, 0.3]
+              time:
+                type: array
+                format: integer
+                example: [0, 30, 60]
+              ci_lower:
+                type: array
+                format: float
+                example: [0.1, 0.2, 0.3]
+              ci_upper:
+                type: array
+                format: float
+                example: [0.1, 0.2, 0.3]
+        400:
+          description: Invalid input parameters
+  /hpv_positive:
+    post:
+      summary: Clinical scenario 3
+      description: Gene signature model for HPV-Positive patients
+      parameters:
+        - name: outcome
+          in: body
+          description: Overall survival (os) or disease free survival (dfs)
+          required: true
+          type: string
+          enum: [os, dfs]
+        - name: gene_signature_type
+          in: body
+          description: The gene signature type
+          required: false
+          type: string
+          enum: [score]
+        - name: censoring_time
+          in: body
+          description: The censoring time, only 24 months in this model
+          required: false
+          type: integer
+          enum: [24]
+        - name: gs_score
+          in: body
+          description: GS2 score
+          required: true
+          type: integer
+          enum: [-2, -1, 0, 1, 2]  
+        - name: clinical_sex
+          in: body
+          description: The clinical sex
+          required: true
+          type: string
+          enum: [male, female]
+        - name: clinical_age_at_diagnosis
+          in: body
+          description: The clinical age at diagnosis
+          required: true
+          type: integer
+          minimum: 19
+          maximum: 93
+        - name: ctn_disease_extension_diagnosis
+          in: body
+          description: The disease extension diagnosis
+          required: true
+          type: string
+          enum: [early disease, locoregionally advanced disease]
+        - name: surge_undergone_cancer_surgery
+          in: body
+          description: Whether surgery has been undergone for cancer
+          required: true
+          type: string
+          enum: [yes, no]
+        - name: radio_radiotherapy_treatment
+          in: body
+          description: Whether radiotherapy treatment has been received
+          required: true
+          type: string
+          enum: [yes, no]
+        - name: chemo_chemotherapy_treatment
+          in: body
+          description: Whether chemotherapy treatment has been received
+          required: true
+          type: string
+          enum: [yes, no]
+        - name: smoking_category
+          in: body
+          description: The smoking category
+          required: true
+          type: string
+          enum: [never, current_former] 
+        - name: tumor_region
+          in: body
+          description: The tumor region
+          required: true
+          type: string
+          enum: [oropharynx, oral_cavity, hypopharynx, larynx]
+        - name: hpv_status
+          in: body
+          description: The HPV status, only positive in this model
+          required: false
+          type: string
+          enum: [positive]
+      responses:
+        200:
+          description: survival probability with confidence intervals and the time
+          schema:
+            type: object
+            properties:
+              survival_probability:
+                type: array
+                format: float
+                example: [0.1, 0.2, 0.3]
+              time:
+                type: array
+                format: integer
+                example: [0, 30, 60]
+              ci_lower:
+                type: array
+                format: float
+                example: [0.1, 0.2, 0.3]
+              ci_upper:
+                type: array
+                format: float
+                example: [0.1, 0.2, 0.3]
+        400:
+          description: Invalid input parameters
+  /radiosensitivity:
+    post:
+      summary: Clinical scenario 4
+      description: Gene signature model for radiosensitivity
+      parameters:
+        - name: outcome
+          in: body
+          description: Overall survival (os) or disease free survival (dfs)
+          required: true
+          type: string
+          enum: [os, dfs]
+        - name: gene_signature_type
+          in: body
+          description: The gene signature type
+          required: true
+          type: string
+          enum: [class, score]
+        - name: censoring_time
+          in: body
+          description: The censoring time
+          required: true
+          type: integer
+          enum: [24, 60]
+        - name: gs3
+          in: body
+          description: Either the GS class or the score
+          schema:
+            type: object
+            properties:
+              gs_class:
+                description: GS3 class
+                type: string
+                enum: ["resistant", "sensitive"]
+              gs_score:
+                description: GS3 score
+                type: integer
+                enum: [-2, -1, 0, 1, 2]
+                anyOf:
+                  - required: ["gs_class"]
+                  - required: ["gs_score"]      
+        - name: clinical_sex
+          in: body
+          description: The clinical sex
+          required: true
+          type: string
+          enum: [male, female]
+        - name: clinical_age_at_diagnosis
+          in: body
+          description: The clinical age at diagnosis
+          required: true
+          type: integer
+          minimum: 19
+          maximum: 93
+        - name: ctn_disease_extension_diagnosis
+          in: body
+          description: The disease extension diagnosis
+          required: true
+          type: string
+          enum: [early disease, locoregionally advanced disease]
+        - name: surge_undergone_cancer_surgery
+          in: body
+          description: Whether surgery has been undergone for cancer
+          required: true
+          type: string
+          enum: [yes, no]
+        - name: radio_radiotherapy_treatment
+          in: body
+          description: Whether radiotherapy treatment has been received
+          required: true
+          type: string
+          enum: [yes, no]
+        - name: chemo_chemotherapy_treatment
+          in: body
+          description: Whether chemotherapy treatment has been received
+          required: true
+          type: string
+          enum: [yes, no]
+        - name: smoking_category
+          in: body
+          description: The smoking category
+          required: true
+          type: string
+          enum: [never, current_former] 
+        - name: tumor_region
+          in: body
+          description: The tumor region
+          required: true
+          type: string
+          enum: [oropharynx, oral_cavity, hypopharynx, larynx]
+        - name: hpv_status
+          in: body
+          description: The HPV status, only required if tumor region is oropharynx
+          required: true
+          type: string
+          enum: [positive, negative, unknown]
+      responses:
+        200:
+          description: survival probability with confidence intervals and the time
+          schema:
+            type: object
+            properties:
+              survival_probability:
+                type: array
+                format: float
+                example: [0.1, 0.2, 0.3]
+              time:
+                type: array
+                format: integer
+                example: [0, 30, 60]
+              ci_lower:
+                type: array
+                format: float
+                example: [0.1, 0.2, 0.3]
+              ci_upper:
+                type: array
+                format: float
+                example: [0.1, 0.2, 0.3]
+        400:
+          description: Invalid input parameters
+  /chemosensitivity_platinum:
+    post:
+      summary: Clinical scenario 5
+      description: Gene signature model for Platinum-based chemosensitivity in loco-regionally advanced disease 
+      parameters:
+        - name: outcome
+          in: body
+          description: Overall survival (os) or disease free survival (dfs)
+          required: true
+          type: string
+          enum: [os, dfs]
+        - name: gene_signature_type
+          in: body
+          description: The gene signature type
+          required: true
+          type: string
+          enum: [score]
+        - name: censoring_time
+          in: body
+          description: The censoring time
+          required: false
+          type: integer
+          enum: [24]
+        - name: gs_score
+          in: body
+          description: GS4 score
+          required: true
+          type: integer
+          enum: [-2, -1, 0, 1, 2]   
+        - name: clinical_sex
+          in: body
+          description: The clinical sex
+          required: true
+          type: string
+          enum: [male, female]
+        - name: clinical_age_at_diagnosis
+          in: body
+          description: The clinical age at diagnosis
+          required: true
+          type: integer
+          minimum: 20
+          maximum: 93
+        - name: ctn_stage_7ed_modified
+          in: body
+          description: The disease extension diagnosis
+          required: true
+          type: string
+          enum: [stage iii, stage iv]
+        - name: chemo_platin_agent
+          in: body
+          description: Whether platin based chemoagent treatment has been received
+          required: true
+          type: string
+          enum: [platinum_based, non_platinum_based, no_chemotherapy]
+        - name: smoking_category
+          in: body
+          description: The smoking category
+          required: true
+          type: string
+          enum: [never, current_former] 
+        - name: tumor_region
+          in: body
+          description: The tumor region
+          required: true
+          type: string
+          enum: [oropharynx, oral_cavity, hypopharynx, larynx]
+        - name: hpv_status
+          in: body
+          description: The HPV status, only required if tumor region is oropharynx
+          required: true
+          type: string
+          enum: [positive, negative, unknown]
+      responses:
+        200:
+          description: survival probability with confidence intervals and the time
+          schema:
+            type: object
+            properties:
+              survival_probability:
+                type: array
+                format: float
+                example: [0.1, 0.2, 0.3]
+              time:
+                type: array
+                format: integer
+                example: [0, 30, 60]
+              ci_lower:
+                type: array
+                format: float
+                example: [0.1, 0.2, 0.3]
+              ci_upper:
+                type: array
+                format: float
+                example: [0.1, 0.2, 0.3]
+        400:
+          description: Invalid input parameters
+  /chemosensitivty_cetuximab:
+    post:
+      summary: Clinical scenario 6
+      description: Gene signature model for Cetuximab-sensitivity in loco-regionally advanced disease
+      parameters:
+        - name: outcome
+          in: body
+          description: Overall survival (os) or disease free survival (dfs)
+          required: true
+          type: string
+          enum: [os, dfs]
+        - name: gene_signature_type
+          in: body
+          description: The gene signature type
+          required: true
+          type: string
+          enum: [score]
+        - name: censoring_time
+          in: body
+          description: The censoring time
+          required: false
+          type: integer
+          enum: [24]
+        - name: gs_score
+          in: body
+          description: GS5 score
+          required: true
+          type: integer
+          enum: [-2, -1, 0, 1, 2]   
+        - name: clinical_sex
+          in: body
+          description: The clinical sex
+          required: true
+          type: string
+          enum: [male, female]
+        - name: clinical_age_at_diagnosis
+          in: body
+          description: The clinical age at diagnosis
+          required: true
+          type: integer
+          minimum: 20
+          maximum: 93
+        - name: ctn_stage_7ed_modified
+          in: body
+          description: The disease extension diagnosis
+          required: true
+          type: string
+          enum: [stage iii, stage iv]
+        - name: chemo_cetuximab_agent
+          in: body
+          description: Whether cetuximab based chemoagent treatment has been received
+          required: true
+          type: string
+          enum: [cetuximab_based, non_cetuximab_based, no_chemotherapy]
+        - name: smoking_category
+          in: body
+          description: The smoking category
+          required: true
+          type: string
+          enum: [never, current_former] 
+        - name: tumor_region
+          in: body
+          description: The tumor region
+          required: true
+          type: string
+          enum: [oropharynx, oral_cavity, hypopharynx, larynx]
+        - name: hpv_status
+          in: body
+          description: The HPV status, only required if tumor region is oropharynx
+          required: true
+          type: string
+          enum: [positive, negative, unknown]
+      responses:
+        200:
+          description: survival probability with confidence intervals and the time
+          schema:
+            type: object
+            properties:
+              survival_probability:
+                type: array
+                format: float
+                example: [0.1, 0.2, 0.3]
+              time:
+                type: array
+                format: integer
+                example: [0, 30, 60]
+              ci_lower:
+                type: array
+                format: float
+                example: [0.1, 0.2, 0.3]
+              ci_upper:
+                type: array
+                format: float
+                example: [0.1, 0.2, 0.3]
+        400:
+          description: Invalid input parameters
+
+  /hazard_ratios:
+    post:
+      summary: Hazard ratios
+      description: Hazard ratios for the gene signature models
+      parameters:
+        - name: clinical_scenario
+          in: body
+          description: The clinical scenario
+          required: true
+          type: string
+          enum: [2, 3, 4, 5, 6]
+        - name: outcome
+          in: body
+          description: Overall survival (os) or disease free survival (dfs)
+          required: true
+          type: string
+          enum: [os, dfs]
+        - name: gene_signature_type
+          in: body
+          description: The gene signature type
+          required: true
+          type: string
+          enum: [class, score]
+        - name: censoring_time
+          in: body
+          description: The censoring time
+          required: true
+          type: integer
+          enum: [24, 60]
+      responses:
+        200:
+          description: hazard ratios for maginal effects with CIs, p-values and comparison
+          schema:
+            type: object
+            properties:
+              hazard_ratio:
+                type: array
+                format: float
+                example: [1.5, 1.0, 0.6]
+              hr_upper_ci:
+                type: array
+                format: float
+                example: [1.6, 1.2, 0.7]
+              hr_lower_ci:
+                type: array
+                format: float
+                example: [1.4, 0.9, 0.5]
+              p_value:
+                type: array
+                format: float
+                example: [0.1, 0.005, 0.008]
+              comparison:
+                type: array
+                format: string
+                example: ["High / Low", "High / Low", "High / Low"]          
+        400:
+          description: Invalid input parameters
+
+  /restricted_mean:
+    post:
+      summary: Restricted mean survival time
+      description: Restricted mean survival time for the gene signature models
+      parameters:
+        - name: clinical_scenario
+          in: body
+          description: The clinical scenario
+          required: true
+          type: string
+          enum: [2, 3, 4, 5, 6]
+        - name: outcome
+          in: body
+          description: Overall survival (os) or disease free survival (dfs)
+          required: true
+          type: string
+          enum: [os, dfs]
+        - name: gene_signature_type
+          in: body
+          description: The gene signature type
+          required: true
+          type: string
+          enum: [class, score]
+        - name: censoring_time
+          in: body
+          description: The censoring time
+          required: true
+          type: integer
+          enum: [24, 60]
+      responses:
+        200:
+          description: restricted mean survival time with CIs
+          schema:
+            type: object
+            properties:
+              restricted_mean_survival_time:
+                type: array
+                format: float
+                example: [1.5, 1.0, 0.6]
+              rmst_upper_ci:
+                type: array
+                format: float
+                example: [1.6, 1.2, 0.7]
+              rmst_lower_ci:
+                type: array
+                format: float
+                example: [1.4, 0.9, 0.5]
+              time:
+                type: array
+                format: integer
+                example: [0, 30, 60]
+              comparison:
+                type: array
+                format: string
+                example: ["High / Low", "High / Low", "High / Low"]
+        400:
+          description: Invalid input parameters
