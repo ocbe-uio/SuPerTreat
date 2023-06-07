@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cetuximab Chemosensitivity Model Form</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Cetuximab Chemosensitivity Model Form</h1>
+  <form id="cetuximab-chemosensitivity-form" onsubmit="submitForm(event);">
+    <label for="outcome">Outcome:</label>
+    <select id="outcome" name="outcome">
+      <option value="os">Overall survival</option>
+      <option value="dfs">Disease free survival</option>
+    </select><br><br>
+
+    <label for="gene_signature_type">Gene Signature Type:</label>
+    <select id="gene_signature_type" name="gene_signature_type">
+      <option value="score">Score</option>
+    </select><br><br>
+
+    <label for="censoring_time">Censoring Time:</label>
+    <select id="censoring_time" name="censoring_time">
+      <option value="24">24</option>
+    </select><br><br>
+
+    <label for="gs_score">GS5 Score:</label>
+    <select id="gs_score" name="gs_score">
+      <option value="-2">-2</option>
+      <option value="-1">-1</option>
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+    </select><br><br>
+
+    <label for="clinical_sex">Clinical Sex:</label>
+    <select id="clinical_sex" name="clinical_sex">
+      <option value="male">Male</option>
+      <option value="female">Female</option>
+    </select><br><br>
+
+    <label for="clinical_age_at_diagnosis">Age at Diagnosis:</label>
+    <input type="number" id="clinical_age_at_diagnosis" name="clinical_age_at_diagnosis" min="20" max="93" step="1"><br><br>
+
+    <label for="ctn_stage_7ed_modified">Disease Stage:</label>
+    <select id="ctn_stage_7ed_modified" name="ctn_stage_7ed_modified">
+      <option value="stage iii">Stage III</option>
+      <option value="stage iv">Stage IV</option>
+    </select><br><br>
+
+    <label for="chemo_cetuximab_agent">Chemoagent Treatment:</label>
+    <select id="chemo_cetuximab_agent" name="chemo_cetuximab_agent">
+      <option value="cetuximab_based">Cetuximab-based</option>
+      <option value="non_cetuximab_based">Non-Cetuximab-based</option>
+      <option value="no_chemotherapy">No Chemotherapy</option>
+    </select><br><br>
+
+    <label for="smoking_category">Smoking Category:</label>
+    <select id="smoking_category" name="smoking_category">
+      <option value="never">Never</option>
+      <option value="current_former">Current/Former</option>
+    </select><br><br>
+
+    <label for="tumor_region">Tumor Region:</label>
+    <select id="tumor_region" name="tumor_region">
+      <option value="oropharynx">Oropharynx</option>
+      <option value="oral_cavity">Oral Cavity</option>
+      <option value="hypopharynx">Hypopharynx</option>
+      <option value="larynx">Larynx</option>
+    </select><br><br>
+
+    <label for="hpv_status">HPV Status:</label>
+    <select id="hpv_status" name="hpv_status">
+      <option value="positive">Positive</option>
+      <option value="negative">Negative</option>
+      <option value="unknown">Unknown</option>
+    </select><br><br>
+
+    <input type="submit" value="Submit">
+  </form>
+
+  <script>
+    function submitForm(event) {
+      event.preventDefault();
+      const form = document.getElementById('cetuximab-chemosensitivity-form');
+      const formData = new FormData(form);
+
+      // Convert formData to JSON object
+      const formDataJson = {};
+      for (const [key, value] of formData.entries()) {
+        if (key.includes('[')) {
+          const parts = key.split('[');
+          const name = parts[0];
+          const subKey = parts[1].replace(']', '');
+          if (!formDataJson[name]) {
+            formDataJson[name] = {};
+          }
+          formDataJson[name][subKey] = value;
+        } else {
+          formDataJson[key] = value;
+        }
+      }
+
+      // Send form data to server
+      fetch('http://127.0.0.1:8001/chemosensitivity_cetuximab', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(formDataJson)
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        // Process the response as needed
+      })
+      .catch(error => console.error(error));
+    }
+  </script>
+</body>
+</html>

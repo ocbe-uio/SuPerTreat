@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Base Model Form</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Base Model Form</h1>
+  <form id="base_model_form">
+    <label for="outcome">Outcome:</label>
+    <select id="outcome" name="outcome">
+      <option value="os">Overall survival</option>
+      <option value="dfs">Disease free survival</option>
+    </select><br><br>
+
+    <label for="censoring_time">Censoring Time:</label>
+    <select id="censoring_time" name="censoring_time">
+      <option value="24">24</option>
+      <option value="60">60</option>
+    </select><br><br>
+
+    <label for="clinical_sex">Clinical Sex:</label>
+    <select id="clinical_sex" name="clinical_sex">
+      <option value="male">Male</option>
+      <option value="female">Female</option>
+    </select><br><br>
+
+    <label for="clinical_age_at_diagnosis">Age at Diagnosis:</label>
+    <input type="number" id="clinical_age_at_diagnosis" name="clinical_age_at_diagnosis" min="19" max="93" step="1"><br><br>
+
+    <label for="ctn_disease_extension_diagnosis">Disease Extension Diagnosis:</label>
+    <select id="ctn_disease_extension_diagnosis" name="ctn_disease_extension_diagnosis">
+      <option value="early disease">Early Disease</option>
+      <option value="locoregionally advanced disease">Locoregionally Advanced Disease</option>
+    </select><br><br>
+
+    <label for="surge_undergone_cancer_surgery">Undergone Cancer Surgery:</label>
+    <select id="surge_undergone_cancer_surgery" name="surge_undergone_cancer_surgery">
+      <option value="yes">Yes</option>
+      <option value="no">No</option>
+    </select><br><br>
+
+    <label for="radio_radiotherapy_treatment">Radiotherapy Treatment:</label>
+    <select id="radio_radiotherapy_treatment" name="radio_radiotherapy_treatment">
+      <option value="yes">Yes</option>
+      <option value="no">No</option>
+    </select><br><br>
+
+    <label for="chemo_chemotherapy_treatment">Chemotherapy Treatment:</label>
+    <select id="chemo_chemotherapy_treatment" name="chemo_chemotherapy_treatment">
+      <option value="yes">Yes</option>
+      <option value="no">No</option>
+    </select><br><br>
+
+    <label for="smoking_category">Smoking Category:</label>
+    <select id="smoking_category" name="smoking_category">
+      <option value="never">Never</option>
+      <option value="current_former">Current/Former</option>
+    </select><br><br>
+
+    <label for="tumor_region">Tumor Region:</label>
+    <select id="tumor_region" name="tumor_region">
+      <option value="oropharynx">Oropharynx</option>
+      <option value="oral cavity">Oral Cavity</option>
+      <option value="hypopharynx">Hypopharynx</option>
+      <option value="larynx">Larynx</option>
+    </select><br><br>
+
+    <label for="hpv_status">HPV Status:</label>
+    <select id="hpv_status" name="hpv_status">
+      <option value="positive">Positive</option>
+      <option value="negative">Negative</option>
+      <option value="unknown">Unknown</option>
+    </select><br><br>
+
+    <input type="submit" value="Submit">
+  </form>
+
+
+
+<script>
+    document.getElementById('base_model_form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+      // Retrieve form values
+      var outcome = document.getElementById('outcome').value;
+      var censoringTime = document.getElementById('censoring_time').value;
+      var clinicalSex = document.getElementById('clinical_sex').value;
+      var ageAtDiagnosis = document.getElementById('clinical_age_at_diagnosis').value;
+      var diseaseExtension = document.getElementById('ctn_disease_extension_diagnosis').value;
+      var undergoneSurgery = document.getElementById('surge_undergone_cancer_surgery').value;
+      var radiotherapyTreatment = document.getElementById('radio_radiotherapy_treatment').value;
+      var chemotherapyTreatment = document.getElementById('chemo_chemotherapy_treatment').value;
+      var smokingCategory = document.getElementById('smoking_category').value;
+      var tumorRegion = document.getElementById('tumor_region').value;
+      var hpvStatus = document.getElementById('hpv_status').value;
+
+      // Construct the request body as JSON
+      var requestBody = {
+        outcome: outcome,
+        censoring_time: parseInt(censoringTime),
+        clinical_sex: clinicalSex,
+        clinical_age_at_diagnosis: parseInt(ageAtDiagnosis),
+        ctn_disease_extension_diagnosis: diseaseExtension,
+        surge_undergone_cancer_surgery: undergoneSurgery,
+        radio_radiotherapy_treatment: radiotherapyTreatment,
+        chemo_chemotherapy_treatment: chemotherapyTreatment,
+        smoking_category: smokingCategory,
+        tumor_region: tumorRegion,
+        hpv_status: hpvStatus
+      };
+        
+      // Send POST request to the API
+      fetch('http://127.0.0.1:8001/base_model', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            })
+            .then(function(response) {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Error: ' + response.status);
+                }
+            })
+            .then(function(data) {
+                // Process the response data as needed
+                console.log(data);
+            })
+            .catch(function(error) {
+                console.error(error);
+            });
+        });
+</script>
+</body>
+</html>
