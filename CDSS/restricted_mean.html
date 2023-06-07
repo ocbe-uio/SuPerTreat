@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Restricted Mean Survival Time</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Restricted Mean Survival Time</h1>
+    <form id='restricted-mean-form'>
+        <label for="clinical_scenario">Clinical Scenario:</label>
+        <select name="clinical_scenario" id="clinical_scenario">
+            <option value="2">HPV-Negative</option>
+            <option value="3">HPV-Positive</option>
+            <option value="4">Radiosensitivity</option>
+            <option value="5">Chemosensitivity Platinum</option>
+            <option value="6">Chemosensitivity Cetuximab</option>
+        </select>
+        <br>
+        <label for="outcome">Outcome:</label>
+        <select name="outcome" id="outcome">
+            <option value="os">Overall Survival (OS)</option>
+            <option value="dfs">Disease-Free Survival (DFS)</option>
+        </select>
+        <br>
+        <label for="gene_signature_type">Gene Signature Type:</label>
+        <select name="gene_signature_type" id="gene_signature_type">
+            <option value="class">Class</option>
+            <option value="score">Score</option>
+        </select>
+        <br>
+        <label for="censoring_time">Censoring Time:</label>
+        <select name="censoring_time" id="censoring_time">
+            <option value="24">24</option>
+            <option value="60">60</option>
+        </select>
+        <br>
+        <input type="submit" value="Calculate Restricted Mean Survival Time">
+    </form>
+</body>
+
+<script>
+    document.getElementById('restricted-mean-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        // Retrieve form values
+        var clinicalScenario = document.getElementById('clinical_scenario').value;
+        var outcome = document.getElementById('outcome').value;
+        var geneSignatureType = document.getElementById('gene_signature_type').value;
+        var censoringTime = document.getElementById('censoring_time').value;
+        
+        // Construct the request body as JSON
+        var requestBody = {
+            clinical_scenario: clinicalScenario,
+            outcome: outcome,
+            gene_signature_type: geneSignatureType,
+            censoring_time: parseInt(censoringTime)
+        };
+        
+        // Send POST request to the API
+        fetch('http://127.0.0.1:8001/restricted_mean', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        })
+        .then(function(response) {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Error: ' + response.status);
+            }
+        })
+        .then(function(data) {
+            // Process the response data as needed
+            console.log(data);
+        })
+        .catch(function(error) {
+            console.error(error);
+        });
+    });
+</script>
+
+</html>

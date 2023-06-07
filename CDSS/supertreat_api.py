@@ -441,7 +441,17 @@ def radiosensitivity():
 @app.route('/chemosensitivity_platinum', methods=['POST'])
 @swag_from('models.yml')
 def chemosensitivity_platinum():
+    """
+    Clinical Scenario 5: Gene signature model for chemosensitivity to platinum
 
+    Endpoint for retrieving the patient trajectory data for chemosensitivity to platinum.
+    
+    Retrieves the request body parameters and queries the database to retrieve the patient trajectory data
+    based on the selected outcome, gene signature type, and censoring time.
+    
+    Returns the patient trajectory data as a JSON response.
+    """
+    
     request_data = request.json
 
     # Retrieve query parameters
@@ -449,15 +459,13 @@ def chemosensitivity_platinum():
     gene_signature_type = "score"
     censoring_time = "24"
 
-
-    model_name = select_model("5", 
-                              outcome, 
-                              gene_signature_type, 
-                              censoring_time)
+    # Select the appropriate model based on the clinical scenario, outcome, gene signature type, and censoring time
+    model_name = select_model("5", outcome, gene_signature_type, censoring_time)
     
+    # Get the MongoDB collection based on the selected model
     collection = db[model_name]
 
-
+    # Define dictionaries for gene signature scores for overall survival (OS) and disease-free survival (DFS)
     gs4_os_dict = {
         "-2": -1.6086046,
         "-1": -1.109999,
@@ -474,7 +482,7 @@ def chemosensitivity_platinum():
         "2": 0.338726
     }
 
-
+    # Construct the query for retrieving the patient trajectory data
     query = {
         "model": model_name,
         "clinical_sex": request_data.get("clinical_sex"),
@@ -486,7 +494,7 @@ def chemosensitivity_platinum():
         "hpv_status": check_tumor_region(request_data)
     }
 
-
+    # Check if the gene signature type is "score" and update the query accordingly
     if request_data.get("gene_signature_type") == "score":
         if outcome == "os":
             query["gs4_score"] = gs4_os_dict[request_data.get('gs_score')]
@@ -495,10 +503,10 @@ def chemosensitivity_platinum():
     else:
         return "Bad request: only score available for this gene signature.", 400
 
-    
     # Query the result
     single_patient_records = collection.find(query)
 
+    # Process the patient trajectory data
     result = get_patient_trajectory(single_patient_records)
 
     return jsonify(result)
@@ -507,7 +515,18 @@ def chemosensitivity_platinum():
 @app.route('/chemosensitivity_cetuximab', methods=['POST'])
 @swag_from('models.yml')
 def chemosensitivity_cetuximab():
+    """
 
+    Clinical scenario 6: Gene signature model for chemosensitivity to cetuximab.
+
+    Endpoint for retrieving the patient trajectory data for chemosensitivity to cetuximab.
+    
+    Retrieves the request body parameters and queries the database to retrieve the patient trajectory data
+    based on the selected outcome, gene signature type, and censoring time.
+    
+    Returns the patient trajectory data as a JSON response.
+    """
+    
     request_data = request.json
     
     # Retrieve query parameters
@@ -515,15 +534,13 @@ def chemosensitivity_cetuximab():
     gene_signature_type = "score"
     censoring_time = "24"
 
-
-    model_name = select_model("6", 
-                              outcome, 
-                              gene_signature_type, 
-                              censoring_time)
+    # Select the appropriate model based on the clinical scenario, outcome, gene signature type, and censoring time
+    model_name = select_model("6", outcome, gene_signature_type, censoring_time)
     
+    # Get the MongoDB collection based on the selected model
     collection = db[model_name]
 
-
+    # Define dictionaries for gene signature scores for overall survival (OS) and disease-free survival (DFS)
     gs5_os_dict = {
         "-2": -2.144831,
         "-1": 1.39765,
@@ -532,7 +549,6 @@ def chemosensitivity_cetuximab():
         "2": 12.025094
     }
 
-    
     gs5_dfs_dict = {
         '-2': -1.836707,
         '-1': 1.598949,
@@ -543,6 +559,7 @@ def chemosensitivity_cetuximab():
 
     request_data = request.json
     
+    # Construct the query for retrieving the patient trajectory data
     query = {
         "model": model_name,
         "clinical_sex": request_data.get("clinical_sex"),
@@ -554,7 +571,7 @@ def chemosensitivity_cetuximab():
         "hpv_status": check_tumor_region(request_data)
     }
 
-
+    # Check if the gene signature type is "score" and update the query accordingly
     if request_data.get("gene_signature_type") == "score":
         if outcome == "os":
             query["gs5_score"] = gs5_os_dict[request_data.get('gs_score')]
@@ -566,12 +583,11 @@ def chemosensitivity_cetuximab():
     # Query the result
     single_patient_records = collection.find(query)
 
+    # Process the patient trajectory data
     result = get_patient_trajectory(single_patient_records)
 
     return jsonify(result)
 
-
-from flask import request
 
 @app.route('/hazard_ratios', methods=['POST'])
 @swag_from('models.yml')
@@ -636,7 +652,60 @@ def hazard_ratios():
 @app.route('/restricted_mean', methods=['POST'])
 @swag_from('models.yml')
 def restricted_mean():
-    return
+    """
+    Endpoint for calculating restricted mean survival time for gene signature models.
+    
+    Retrieves the request body parameters and calculates the restricted mean survival time
+    based on the selected clinical scenario, outcome, gene signature type, and censoring time.
+    
+    Returns the restricted mean survival time along with confidence intervals, time points,
+    and comparisons as a JSON response.
+    """
+    
+    # Retrieve request body parameters
+    request_data = request.json
+    clinical_scenario = request_data.get('clinical_scenario')
+    outcome = request_data.get('outcome')
+    gene_signature_type = request_data.get('gene_signature_type')
+    censoring_time = request_data.get('censoring_time')
+
+    model_name = select_model(clinical_scenario, outcome, gene_signature_type, censoring_time)
+
+    collection = db["rmst"]
+
+    print(model_name)
+    # Construct the query for retrieving the restricted mean survival time data from MongoDB
+    query = {
+        "mod_name":  model_name
+    }
+    
+    # Query the MongoDB collection to retrieve the restricted mean survival time data
+    restricted_mean_data = collection.find(query)
+
+    # Extract the relevant data from the retrieved documents
+    rmst_diff = []
+    rmst_diff_upper_ci = []
+    rmst_diff_lower_ci = []
+    time = []
+    comparison = []
+    for row in restricted_mean_data:
+        rmst_diff.append(row["RMST_diff"])
+        rmst_diff_upper_ci.append(row["RMST_diff_upper"])
+        rmst_diff_lower_ci.append(row["RMST_diff_lower"])
+        time.append(row["timepoint"])
+        comparison.append(row["comparison"])
+
+    # Construct the response payload
+    response = {
+        "rmst_diff": rmst_diff,
+        "rmst_upper_ci": rmst_diff_upper_ci,
+        "rmst_lower_ci": rmst_diff_lower_ci,
+        "time": time,
+        "comparison": comparison
+    }
+
+    return jsonify(response)
+
 
 if __name__ == '__main__':
     from pymongo import MongoClient
